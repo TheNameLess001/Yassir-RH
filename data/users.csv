@@ -1,5 +1,5 @@
-username,password,role,full_name,department,cp_balance
-admin,admin123,admin,Responsable RH,RH,0
-amine.b,yassir2024,user,Amine Benali,IT,18
-sara.k,user123,user,Sara Kadiri,Opérations,12
-karim.m,azerty,user,Karim Mansouri,Marketing,20
+username,password,role,full_name,department,cp_balance,job_title,base_salary,start_date,rib
+admin,admin123,admin,Responsable RH,RH,0,DRH,0,2020-01-01,000
+amine.b,yassir2024,user,Amine Benali,IT,18,Développeur Fullstack,15000,2019-05-10,1817890000
+sara.k,user123,user,Sara Kadiri,Opérations,12,Ops Manager,11000,2021-03-15,1904560000
+karim.m,azerty,user,Karim Mansouri,Marketing,20,Growth Hacker,13000,2022-01-20,2301230000
