@@ -2,117 +2,100 @@ import streamlit as st
 import sys
 import os
 
-# --- CORRECTION DU CHEMIN (INDISPENSABLE) ---
-# Ajoute le dossier courant au chemin de Python pour qu'il trouve le dossier 'utils'
+# --- CORRECTION CHEMIN ---
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-# Maintenant on peut importer le style
 from utils import style
 
-# --- CONFIGURATION DE LA PAGE ---
-st.set_page_config(
-    page_title="Yassir HR Portal",
-    layout="wide",
-    initial_sidebar_state="collapsed" # On cache la sidebar native Streamlit
-)
+st.set_page_config(page_title="Yassir HR", layout="wide", initial_sidebar_state="collapsed")
 
-# --- CHARGEMENT DU DESIGN GLOBAL ---
-style.load_css()       # Injecte le CSS (Violet Yassir, Cards, Font)
-style.display_navbar() # Affiche la Navbar violette et la Sidebar icônes
+# Chargement style
+style.load_css()
+style.display_navbar()
 
-# --- ESPACE POUR LA NAVBAR FIXE ---
-st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+# Espace pour navbar fixe
+st.markdown("<div style='height: 50px;'></div>", unsafe_allow_html=True)
 
-# --- CONTENU PRINCIPAL ---
+# --- HEADER ---
+c_h1, c_h2 = st.columns([3, 1])
+c_h1.markdown("### Bonsoir SAIF-EDDINE 👋")
+if c_h2.button("+ Nouvelle demande", type="primary"):
+    st.toast("Ouverture du formulaire de demande...") # C'est ici que l'action se passe !
 
-# 1. En-tête (Salutation + Bouton Action)
-col_head_1, col_head_2 = st.columns([3, 1])
-with col_head_1:
-    st.markdown("### Bonsoir SAIF-EDDINE 👋")
-with col_head_2:
-    # Bouton avec la classe CSS 'btn-yassir' définie dans style.py
-    st.markdown('<div style="text-align:right;"><a href="#" class="btn-yassir">+ Nouvelle demande</a></div>', unsafe_allow_html=True)
-
-# 2. Grille de mise en page (3 Colonnes : Profil | Dashboard | Annonces)
+# --- LAYOUT PRINCIPAL ---
 c1, c2, c3 = st.columns([1, 2.2, 1])
 
-# --- COLONNE 1 : PROFIL (GAUCHE) ---
+# === COLONNE 1 : PROFIL (INTERACTIF) ===
 with c1:
+    # On ouvre un conteneur style "Carte"
+    with st.container():
+        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        
+        # Partie HTML (Image + Info)
+        st.markdown("""
+            <div class="profile-circle">SB</div>
+            <div style="text-align:center; font-weight:bold; margin-top:10px;">SAIF-EDDINE BOUNOIR</div>
+            <div style="text-align:center; color:#777; font-size:12px; margin-bottom:15px;">Responsable commercial</div>
+            <hr style="border-top:1px solid #eee;">
+        """, unsafe_allow_html=True)
+        
+        # VRAIS BOUTONS INTERACTIFS
+        if st.button("👤 Profil"):
+            st.write("Navigation vers Profil...")
+            # st.switch_page("pages/Profil.py") # Décommentez si vous avez la page
+            
+        if st.button("📅 Calendrier"):
+            st.write("Ouverture calendrier...")
+            
+        if st.button("🕒 Tâches"):
+            st.write("Chargement tâches...")
+            
+        if st.button("📄 Documents"):
+            st.write("Ouverture documents...")
+
+        st.markdown('</div>', unsafe_allow_html=True) # Fin Carte
+
+    # Widget Equipe
     st.markdown("""
-    <div class="card">
-        <div class="profile-img">SB</div>
-        
-        <div style="text-align:center; font-weight:bold; margin-top:10px; font-size:16px;">SAIF-EDDINE BOUNOIR</div>
-        <div style="text-align:center; color:#777; font-size:13px; margin-bottom:15px;">
-            Responsable commercial<br>
-            <span style="color:#aaa; font-size:12px;">Opérationnel - Racine</span>
-        </div>
-        
-        <hr style="border:0; border-top:1px solid #eee; margin: 15px 0;">
-        
-        <div style="display:flex; justify-content:space-between; font-size:11px; color:#888; margin-bottom:20px; padding: 0 10px;">
-            <span>📍 CASABLANCA</span>
-            <span>📅 22 Aug 2024</span>
-        </div>
-        
-        <div class="grid-btn">👤 Profil</div>
-        <div class="grid-btn">📅 Calendrier</div>
-        <div class="grid-btn">🕒 Tâches</div>
-        <div class="grid-btn">📄 Documents</div>
-    </div>
-    
-    <div class="card" style="padding: 15px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <b>👥 Mon équipe</b>
-            <span style="color:#ccc;">⋮</span>
-        </div>
+    <div class="css-card" style="padding:15px; margin-top:-10px;">
+        <b>👥 Mon équipe</b>
     </div>
     """, unsafe_allow_html=True)
 
-# --- COLONNE 2 : CENTRE (Suivi des demandes) ---
+# === COLONNE 2 : DASHBOARD (ONGETS ACTIFS) ===
 with c2:
-    st.markdown("""
-    <div class="card" style="min-height: 350px;">
-        <div style="font-weight:bold; margin-bottom:20px;">Suivi des demandes</div>
-        
-        <div style="border-bottom: 2px solid #f0f0f0; margin-bottom:30px; display:flex; gap:20px; font-size:14px;">
-            <div class="tab-item active">📅 Absences <span class="nav-badge" style="background:#eee; color:#666;">0</span></div>
-            <div class="tab-item">📝 Formulaires <span class="nav-badge" style="background:#eee; color:#666;">0</span></div>
-            <div class="tab-item">📄 Documents <span class="nav-badge" style="background:#eee; color:#666;">0</span></div>
-            <div class="tab-item">💸 Note de frais <span class="nav-badge" style="background:#eee; color:#666;">0</span></div>
-        </div>
-        
-        <div style="text-align:center; padding: 30px; color:#ccc;">
-            <div style="font-size:40px; margin-bottom:10px; opacity:0.5;">◯</div>
-            <div style="height:8px; width:80px; background:#f0f0f0; margin: 0 auto 8px auto; border-radius:4px;"></div>
-            <div style="height:8px; width:120px; background:#f0f0f0; margin: 0 auto; border-radius:4px;"></div>
-            <p style="margin-top:20px; font-size:13px; color:#999;">Aucune demande</p>
-        </div>
-    </div>
+    st.markdown('<div class="css-card" style="min-height: 400px;">', unsafe_allow_html=True)
+    st.markdown('<div style="font-weight:bold; margin-bottom:10px;">Suivi des demandes</div>', unsafe_allow_html=True)
     
-    <div class="card">
-        <div style="display:flex; gap:15px; margin-bottom:15px;">
-            <div style="background:#f0f0f0; height:40px; width:40px; border-radius:50%;"></div>
-            <div style="background:#f0f0f0; height:15px; width:200px; border-radius:4px; margin-top:12px;"></div>
-        </div>
-        <div style="display:flex; gap:10px;">
-            <div style="background:#f4f6f9; height:80px; flex:1; border-radius:6px;"></div>
-            <div style="background:#f4f6f9; height:80px; flex:1; border-radius:6px;"></div>
-            <div style="background:#f4f6f9; height:80px; flex:1; border-radius:6px;"></div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # VRAIS ONGLETS STREAMLIT
+    tab1, tab2, tab3, tab4 = st.tabs(["📅 Absences", "📝 Formulaires", "📄 Documents", "💸 Notes de frais"])
+    
+    with tab1:
+        st.info("Aucune absence récente.")
+        # Ici vous pouvez mettre st.dataframe() ou des graphiques
+        
+    with tab2:
+        st.write("Aucun formulaire en attente.")
+        
+    with tab3:
+        st.write("Vos documents sont à jour.")
+        
+    with tab4:
+        st.write("Aucune note de frais.")
+        
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# --- COLONNE 3 : DROITE (Annonces) ---
+    # Widget bas (News)
+    st.markdown('<div class="css-card">Actualités Yassir...</div>', unsafe_allow_html=True)
+
+# === COLONNE 3 : ANNONCES ===
 with c3:
     st.markdown("""
-    <div class="card" style="height: 380px;">
-        <div style="font-weight:bold; margin-bottom:10px;">📢 Annonces</div>
-        <hr style="border:0; border-top:1px solid #eee; margin-bottom:20px;">
-        
+    <div class="css-card" style="height: 400px;">
+        <b>📢 Annonces</b>
+        <hr style="border-top:1px solid #eee;">
         <div style="text-align:center; padding-top:80px; color:#aaa;">
-            <div style="font-size:48px; margin-bottom:10px; opacity:0.3;">📁</div>
-            <div style="font-size:13px;">Aucune annonce à afficher</div>
+            <div style="font-size:40px;">📁</div>
+            Aucune annonce
         </div>
     </div>
     """, unsafe_allow_html=True)
