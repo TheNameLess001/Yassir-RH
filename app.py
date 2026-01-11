@@ -4,38 +4,57 @@ import os
 from datetime import datetime, date, timedelta
 from fpdf import FPDF
 
-# --- 1. CONFIGURATION & STYLE ---
+# --- 1. CONFIGURATION & STYLE (CORRECTION DÉFINITIVE) ---
 st.set_page_config(page_title="Yassir RH Portal", layout="wide", page_icon="🟣")
 
 st.markdown("""
     <style>
-        /* Fond Violet Yassir pour la Sidebar */
+        /* 1. Fond Violet Yassir pour la Sidebar */
         [data-testid="stSidebar"] {
             background-color: #6c1ddb;
         }
-        /* Texte blanc dans la sidebar */
-        [data-testid="stSidebar"] * {
+        
+        /* 2. Texte générique en blanc dans la sidebar (Titres, labels) */
+        [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, 
+        [data-testid="stSidebar"] label, [data-testid="stSidebar"] span {
             color: white !important;
         }
-        /* BOUTONS BLANCS TEXTE VIOLET (Correction Contraste) */
+
+        /* 3. CORRECTION BOUTONS (Ciblage profond pour éviter le texte blanc sur blanc) */
+        /* Le conteneur du bouton */
         [data-testid="stSidebar"] button {
             background-color: white !important;
-            color: #6c1ddb !important;
             border: none !important;
             border-radius: 8px !important;
-            font-weight: bold !important;
             margin-bottom: 5px !important;
             width: 100%;
+            transition: transform 0.1s;
         }
+        
+        /* Le TEXTE à l'intérieur du bouton (C'est ici que ça bloquait) */
+        [data-testid="stSidebar"] button p, 
+        [data-testid="stSidebar"] button div {
+            color: #6c1ddb !important; /* Texte Violet Foncé OBLIGATOIRE */
+            font-weight: bold !important;
+            font-size: 14px !important;
+        }
+        
+        /* Effet au survol */
         [data-testid="stSidebar"] button:hover {
             background-color: #f0f0f0 !important;
-            color: #5a18b9 !important;
+            transform: scale(1.02);
         }
-        /* Style des Expanders */
+
+        /* 4. Style des Expanders (Menus déroulants) */
         [data-testid="stSidebar"] .streamlit-expanderHeader {
             background-color: rgba(255, 255, 255, 0.1) !important;
             color: white !important;
             border-radius: 8px;
+        }
+        
+        /* Pour s'assurer que le texte dans l'expander header reste blanc */
+        [data-testid="stSidebar"] .streamlit-expanderHeader p {
+            color: white !important;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -63,25 +82,20 @@ def init_db():
         pd.DataFrame(columns=["username", "date", "status", "start_time", "end_time", "break_min"]).to_csv(PLANNING_FILE, index=False)
 
 def load_data(f): 
-    # Fonction AUTO-RÉPARATRICE
+    # Fonction AUTO-RÉPARATRICE pour éviter les bugs si colonnes manquantes
     try: 
         df = pd.read_csv(f)
         
-        # Correction spécifique pour l'erreur KeyError: 'is_active'
         if f == USERS_FILE:
-            # Si des colonnes manquent (vieux fichier), on les ajoute
             required_cols = ["username","password","role","full_name","department","cp_balance","job_title","base_salary","start_date","rib","address","dob","family_status","phone","contract_type","is_active"]
             save_needed = False
             for col in required_cols:
                 if col not in df.columns:
-                    if col == 'is_active':
-                        df[col] = True # Par défaut tout le monde est actif
-                    else:
-                        df[col] = "" # Vide par défaut
+                    if col == 'is_active': df[col] = True
+                    else: df[col] = ""
                     save_needed = True
             
-            if save_needed:
-                df.to_csv(f, index=False)
+            if save_needed: df.to_csv(f, index=False)
                 
         return df
     except: 
@@ -92,13 +106,10 @@ def save_data(df, f): df.to_csv(f, index=False)
 
 def login(u, p):
     df = load_data(USERS_FILE)
-    # Vérification sécurisée
     if 'is_active' in df.columns:
         usr = df[(df['username']==u) & (df['password']==p) & (df['is_active']==True)]
     else:
-        # Fallback si jamais la réparation a échoué (rare)
         usr = df[(df['username']==u) & (df['password']==p)]
-        
     return usr.iloc[0] if not usr.empty else None
 
 def calculate_hours(start, end, pause):
@@ -134,7 +145,6 @@ def generate_planning_pdf(user_name, week_start, data, total_h):
     pdf.cell(0, 10, f"Semaine du : {week_start}", 0, 1, 'C')
     pdf.ln(10)
     
-    # Tableau simple
     pdf.set_fill_color(240, 240, 240)
     pdf.cell(40, 10, "Date", 1, 0, 'C', 1)
     pdf.cell(40, 10, "Statut", 1, 0, 'C', 1)
@@ -150,12 +160,26 @@ def generate_planning_pdf(user_name, week_start, data, total_h):
     pdf.cell(0, 10, f"TOTAL: {total_h} Heures", 0, 1, 'R')
     return pdf.output(dest='S').encode('latin-1', 'replace')
 
+def create_standard_doc(user, doc_type):
+    pdf = YassirPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(0, 10, doc_type.upper(), 0, 1, 'C')
+    pdf.ln(10)
+    pdf.set_font("Arial", "", 12)
+    
+    text = f"Attestation délivrée à {user['full_name']} (Matricule: {user['username']}).\nPoste: {user['job_title']}.\nDate début: {user['start_date']}."
+    pdf.multi_cell(0, 8, text)
+    
+    pdf.ln(20)
+    pdf.cell(0, 10, "Signature RH", 0, 1, 'R')
+    return pdf.output(dest='S').encode('latin-1', 'replace')
+
 # --- PAGES ---
 
 def page_planning_interactif(role):
     st.subheader("🗓️ Planification & Suivi Hebdomadaire")
     
-    # 1. Sélecteurs
     c1, c2 = st.columns(2)
     selected_date = c1.date_input("Semaine du", date.today() - timedelta(days=date.today().weekday()))
     monday = selected_date - timedelta(days=selected_date.weekday())
@@ -168,7 +192,6 @@ def page_planning_interactif(role):
     
     st.info(f"Semaine du **{monday.strftime('%d/%m/%Y')}** pour **{target_user}**")
     
-    # 2. Préparation Données
     df_plan = load_data(PLANNING_FILE)
     week_days = [monday + timedelta(days=i) for i in range(7)] 
     
@@ -190,7 +213,6 @@ def page_planning_interactif(role):
                 "Pause": 0 if is_weekend else 60
             })
             
-    # 3. Tableau Interactif
     edited = st.data_editor(
         pd.DataFrame(editor_data),
         column_config={
@@ -204,7 +226,6 @@ def page_planning_interactif(role):
         key=f"edit_{target_user}_{monday}"
     )
     
-    # 4. Calculs & Save
     total_h = 0
     clean_data = []
     for idx, row in edited.iterrows():
@@ -233,13 +254,27 @@ def page_planning_interactif(role):
         pdf = generate_planning_pdf(target_user, monday.strftime("%d/%m"), clean_data, total_h)
         st.download_button("Télécharger", pdf, "timesheet.pdf", "application/pdf")
 
+def page_doc_generation(is_admin=False):
+    st.subheader("📄 Génération de Documents")
+    users = load_data(USERS_FILE)
+    target_user = st.session_state.user
+    
+    if is_admin:
+        choice = st.selectbox("Collaborateur", users['username'].tolist())
+        target_user = users[users['username'] == choice].iloc[0]
+        
+    doc_type = st.selectbox("Type", ["Attestation de Travail", "Attestation de Salaire"])
+    if st.button("Générer PDF"):
+        pdf = create_standard_doc(target_user, doc_type)
+        st.download_button("Télécharger", pdf, f"{doc_type}.pdf", "application/pdf")
+
 def page_profil_user():
     st.header("👤 Mon Profil")
     user = st.session_state.user
     with st.form("my_profile"):
         c1, c2 = st.columns(2)
-        new_addr = c1.text_input("Adresse", user.get('address', ''))
-        new_phone = c2.text_input("Téléphone", user.get('phone', ''))
+        new_addr = c1.text_input("Adresse", str(user.get('address', '')))
+        new_phone = c2.text_input("Téléphone", str(user.get('phone', '')))
         new_pass = c1.text_input("Mot de passe (si changement)", type="password")
         c2.info("Contactez RH pour autres changements.")
         if st.form_submit_button("Mettre à jour"):
@@ -259,6 +294,7 @@ init_db()
 if 'user' not in st.session_state: st.session_state.user = None
 
 if st.session_state.user is None:
+    # Page Login
     c1, c2, c3 = st.columns([1,2,1])
     with c2:
         st.markdown("<br><h1 style='color:#6c1ddb; text-align:center;'>Yassir People</h1>", unsafe_allow_html=True)
@@ -278,7 +314,7 @@ else:
     with c2: 
         if os.path.exists(LOGO_FILE): st.image(LOGO_FILE, width=120)
 
-    # Sidebar Menu
+    # Sidebar Menu (AVEC FIX CSS)
     with st.sidebar:
         if os.path.exists(LOGO_FILE): st.image(LOGO_FILE, use_container_width=True)
         st.write("")
@@ -298,6 +334,7 @@ else:
             with st.expander("🏠 Mon Espace", expanded=True):
                 if st.button("Mon Profil"): menu_select = "user_profil"
                 if st.button("Mon Planning"): menu_select = "user_plan"
+                if st.button("Mes Documents"): menu_select = "user_docs"
 
         st.markdown("---")
         if st.button("Déconnexion"):
@@ -311,7 +348,9 @@ else:
     
     if pg == "user_profil": page_profil_user()
     elif pg == "user_plan": page_planning_interactif('user')
+    elif pg == "user_docs": page_doc_generation(is_admin=False)
     elif pg == "admin_plan": page_planning_interactif('admin')
+    elif pg == "admin_docs": page_doc_generation(is_admin=True)
     elif pg == "admin_users": 
         st.subheader("Annuaire")
         st.dataframe(load_data(USERS_FILE))
