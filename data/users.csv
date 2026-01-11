@@ -1,1 +1,5 @@
-
+username,password,role,full_name,department,cp_balance
+admin,admin123,admin,Responsable RH,RH,0
+amine.b,yassir2024,user,Amine Benali,IT,18
+sara.k,user123,user,Sara Kadiri,Opérations,12
+karim.m,azerty,user,Karim Mansouri,Marketing,20
