@@ -2,8 +2,8 @@ import streamlit as st
 import sys
 import os
 
-# --- CORRECTION DU CHEMIN (INDISPENSABLE POUR L'ERREUR D'IMPORT) ---
-# Ajoute le dossier courant au chemin de Python pour qu'il trouve 'utils'
+# --- CORRECTION DU CHEMIN (INDISPENSABLE) ---
+# Ajoute le dossier courant au chemin de Python pour qu'il trouve le dossier 'utils'
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Maintenant on peut importer le style
@@ -13,12 +13,15 @@ from utils import style
 st.set_page_config(
     page_title="Yassir HR Portal",
     layout="wide",
-    initial_sidebar_state="collapsed" # On cache la sidebar native pour utiliser la nôtre
+    initial_sidebar_state="collapsed" # On cache la sidebar native Streamlit
 )
 
-# --- CHARGEMENT DU DESIGN ---
+# --- CHARGEMENT DU DESIGN GLOBAL ---
 style.load_css()       # Injecte le CSS (Violet Yassir, Cards, Font)
-style.display_navbar() # Affiche la Navbar violette et la Sidebar icons
+style.display_navbar() # Affiche la Navbar violette et la Sidebar icônes
+
+# --- ESPACE POUR LA NAVBAR FIXE ---
+st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
 # --- CONTENU PRINCIPAL ---
 
@@ -33,7 +36,7 @@ with col_head_2:
 # 2. Grille de mise en page (3 Colonnes : Profil | Dashboard | Annonces)
 c1, c2, c3 = st.columns([1, 2.2, 1])
 
-# --- COLONNE 1 : PROFIL GAUCHE ---
+# --- COLONNE 1 : PROFIL (GAUCHE) ---
 with c1:
     st.markdown("""
     <div class="card">
